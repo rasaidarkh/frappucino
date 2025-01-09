@@ -1,9 +1,11 @@
-package myapp
+package main
 
 import (
 	"database/sql"
 	"frappuccino/internal/config"
 	"log"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
