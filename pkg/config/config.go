@@ -6,20 +6,27 @@ import (
 )
 
 type Config struct {
-	ConnectionString string
+	Host     string
+	User     string
+	Password string
+	DBname   string
+	Port     string
 }
 
 func ConfigLoad() Config {
 	var Cfg Config
-	host := os.Getenv("DB_HOST")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
-	port := os.Getenv("DB_PORT")
-	Cfg.ConnectionString = fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", 
-		host, port, user, password, dbname,
-	)
-	fmt.Println(Cfg.ConnectionString)
+	Cfg.Host = os.Getenv("DB_HOST")
+	Cfg.User = os.Getenv("DB_USER")
+	Cfg.Password = os.Getenv("DB_PASSWORD")
+	Cfg.DBname = os.Getenv("DB_NAME")
+	Cfg.Port = os.Getenv("DB_PORT")
+
 	return Cfg
+}
+
+func (c *Config) MakeConnectionString() string {
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		c.Host, c.Port, c.User, c.Password, c.DBname,
+	)
 }

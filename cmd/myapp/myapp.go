@@ -10,7 +10,7 @@ import (
 
 func main() {
 	cfg := config.ConfigLoad()
-	db, err := sql.Open("postgres", cfg.ConnectionString)
+	db, err := sql.Open("postgres", cfg.MakeConnectionString())
 	if err != nil {
 		log.Fatal(err)
 	}
