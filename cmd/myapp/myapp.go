@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"frappuccino/internal/config"
+	"frappuccino/pkg/config"
 	"log"
 
 	_ "github.com/lib/pq"
