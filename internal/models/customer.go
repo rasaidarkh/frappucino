@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/lib/pq"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type Customer struct {
@@ -14,7 +15,7 @@ type Customer struct {
 	Allergens  pq.StringArray `json:"allergens"`
 }
 
-type Sex int
+type Sex uint
 
 const (
 	Female Sex = iota

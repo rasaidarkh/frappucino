@@ -19,7 +19,7 @@ func main() {
 	}
 	defer db.Close()
 
-	stmt, err := db.Prepare("SELECT 'HALOO'")
+	stmt, err := db.Prepare("SELECT 1;")
 	if err != nil {
 		log.Fatal(err)
 	}
