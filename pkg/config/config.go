@@ -18,11 +18,11 @@ type Config struct {
 
 func ConfigLoad() Config {
 	var Cfg Config
-	Cfg.Host = os.Getenv("DB_HOST")
-	Cfg.User = os.Getenv("DB_USER")
-	Cfg.Password = os.Getenv("DB_PASSWORD")
-	Cfg.DBname = os.Getenv("DB_NAME")
-	Cfg.Port = os.Getenv("DB_PORT")
+	Cfg.Host = getEnv("DB_HOST", "localhost")
+	Cfg.User = getEnv("DB_USER", "postgres")
+	Cfg.Password = getEnv("DB_PASSWORD", "0000")
+	Cfg.DBname = getEnv("DB_NAME", "frappuccino_db")
+	Cfg.Port = getEnv("DB_PORT", "5432")
 
 	return Cfg
 }
@@ -32,4 +32,11 @@ func (c *Config) MakeConnectionString() string {
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		c.Host, c.Port, c.User, c.Password, c.DBname,
 	)
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }

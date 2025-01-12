@@ -1,17 +1,18 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"frappuccino/internal/handlers"
 	"frappuccino/pkg/config"
 	"log"
+	"log/slog"
 	"net/http"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	http.ListenAndServe("0.0.0.0:8000", handlers.Routes())
 	cfg := config.ConfigLoad()
 	db, err := sql.Open("postgres", cfg.MakeConnectionString())
 	if err != nil {
@@ -32,4 +33,7 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println(hello)
+
+	server := handlers.NewAPIServer("0.0.0.0:8000", http.NewServeMux(), db, &slog.Logger{}, context.Background())
+	server.Run()
 }
