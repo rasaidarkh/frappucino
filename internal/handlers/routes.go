@@ -3,12 +3,23 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"frappuccino/internal/repository"
 	"frappuccino/internal/service"
 	"log"
 	"log/slog"
 	"net/http"
 )
+
+func Routes() *http.ServeMux {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/{x}", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.Context())
+	})
+
+	return mux
+}
 
 type APIServer struct {
 	address string
@@ -18,10 +29,10 @@ type APIServer struct {
 	ctx     context.Context
 }
 
-func NewAPIServer(address string, mux *http.ServeMux, db *sql.DB, logger *slog.Logger, ctx context.Context) *APIServer {
+func NewAPIServer(address string, db *sql.DB, logger *slog.Logger, ctx context.Context) *APIServer {
 	return &APIServer{
 		address: address,
-		mux:     mux,
+		mux:     Routes(),
 		db:      db,
 		logger:  logger,
 		ctx:     ctx,

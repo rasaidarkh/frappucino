@@ -7,7 +7,6 @@ import (
 	"frappuccino/pkg/config"
 	"log"
 	"log/slog"
-	"net/http"
 
 	_ "github.com/lib/pq"
 )
@@ -34,6 +33,10 @@ func main() {
 	}
 	log.Println(hello)
 
-	server := handlers.NewAPIServer("0.0.0.0:8000", http.NewServeMux(), db, &slog.Logger{}, context.Background())
+	server := handlers.NewAPIServer(
+		"0.0.0.0:8000",
+		db, &slog.Logger{},
+		context.Background(),
+	)
 	server.Run()
 }
