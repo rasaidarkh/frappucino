@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"frappuccino/internal/handlers"
 	"frappuccino/pkg/config"
+	"frappuccino/pkg/lib/slogpretty"
 	"log"
-	"log/slog"
+	"os"
 
 	_ "github.com/lib/pq"
 )
@@ -35,7 +36,8 @@ func main() {
 
 	server := handlers.NewAPIServer(
 		"0.0.0.0:8000",
-		db, &slog.Logger{},
+		db,
+		slogpretty.SetupPrettySlog(os.Stdout),
 		context.Background(),
 	)
 	server.Run()
