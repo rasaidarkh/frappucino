@@ -6,11 +6,14 @@ import (
 )
 
 type Config struct {
-	Host     string
-	User     string
-	Password string
-	DBname   string
-	Port     string
+	Host          string `env:"DB_HOST"`
+	User          string `env:"DB_USER"`
+	Password      string `env:"DB_PASSWORD"`
+	DBname        string `env:"DB_NAME"`
+	Port          string `env:"DB_PORT"`
+	RedisURI      string `env:"REDIS_URI"`
+	RedisPassword string `env:"REDIS_PASSWORD"`
+	RedisDB       int    `env:"REDIS_DB"`
 }
 
 func ConfigLoad() Config {

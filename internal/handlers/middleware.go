@@ -13,3 +13,8 @@ func Middleware(handler http.Handler) http.Handler {
 			handler.ServeHTTP(w, r)
 		})
 }
+
+func IsAuthenticated() bool {
+	// TODO: Redis session with user authentication
+	return false
+}
