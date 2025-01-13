@@ -6,7 +6,6 @@
 --     CONNECTION LIMIT = -1
 --     IS_TEMPLATE = False;
 
-
 -- enums
 CREATE TYPE sex AS ENUM ('female', 'male', 'other');
 CREATE TYPE transaction_type AS ENUM
