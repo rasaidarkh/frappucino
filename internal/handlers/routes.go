@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"frappuccino/internal/repository"
 	"frappuccino/internal/service"
 	"log"
@@ -14,9 +13,7 @@ import (
 func Routes() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/{x}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.Context())
-	})
+	mux.HandleFunc("/", http.NotFoundHandler().ServeHTTP)
 
 	return mux
 }

@@ -26,21 +26,21 @@ func NewInventoryHandler(service InventoryService, logger *slog.Logger) *Invento
 	return &InventoryHandler{service, logger}
 }
 
-func (h *InventoryHandler) RegisterEndpoints(mux *http.ServeMux) {
-	mux.HandleFunc("POST /inventory", h.Post)
-	mux.HandleFunc("POST /inventory/", h.Post)
+func (i *InventoryHandler) RegisterEndpoints(mux *http.ServeMux) {
+	mux.HandleFunc("POST /inventory", i.Post)
+	mux.HandleFunc("POST /inventory/", i.Post)
 
-	mux.HandleFunc("GET /inventory", h.GetAll)
-	mux.HandleFunc("GET /inventory/", h.GetAll)
+	mux.HandleFunc("GET /inventory", i.GetAll)
+	mux.HandleFunc("GET /inventory/", i.GetAll)
 
-	mux.HandleFunc("GET /inventory/{id}", h.GetElementById)
-	mux.HandleFunc("GET /inventory/{id}/", h.GetElementById)
+	mux.HandleFunc("GET /inventory/{id}", i.GetElementById)
+	mux.HandleFunc("GET /inventory/{id}/", i.GetElementById)
 
-	mux.HandleFunc("PUT /inventory/{id}", h.Put)
-	mux.HandleFunc("PUT /inventory/{id}/", h.Put)
+	mux.HandleFunc("PUT /inventory/{id}", i.Put)
+	mux.HandleFunc("PUT /inventory/{id}/", i.Put)
 
-	mux.HandleFunc("DELETE /inventory/{id}", h.Delete)
-	mux.HandleFunc("DELETE /inventory/{id}/", h.Delete)
+	mux.HandleFunc("DELETE /inventory/{id}", i.Delete)
+	mux.HandleFunc("DELETE /inventory/{id}/", i.Delete)
 }
 
 func (h *InventoryHandler) Delete(w http.ResponseWriter, r *http.Request) {

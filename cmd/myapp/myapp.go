@@ -35,7 +35,7 @@ func main() {
 	log.Println(hello)
 
 	server := handlers.NewAPIServer(
-		"0.0.0.0:8000",
+		"0.0.0.0:8080",
 		db,
 		slogpretty.SetupPrettySlog(os.Stdout),
 		context.Background(),

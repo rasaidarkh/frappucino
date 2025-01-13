@@ -120,3 +120,82 @@ CREATE INDEX idx_order_items_customization ON order_items (customization_info);
 CREATE INDEX idx_order_status_history_change_date ON order_status_history (change_date);
 CREATE INDEX idx_order_created_at ON orders (created_at);
 
+-- Insert sample categories
+INSERT INTO categories (category_name, description)
+VALUES
+    ('Beverages', 'Hot and cold drinks'),
+    ('Pastries', 'Freshly baked pastries'),
+    ('Sandwiches', 'Delicious sandwiches'),
+    ('Salads', 'Fresh and healthy salads');
+
+-- Insert sample menu items
+INSERT INTO menu_items (category_id, menu_item_name, description, price)
+VALUES
+    (1, 'Caramel Frappuccino', 'A sweet, icy coffee treat with caramel drizzle.', 4.50),
+    (1, 'Espresso', 'Rich and bold espresso.', 2.50),
+    (2, 'Croissant', 'Buttery and flaky French pastry.', 3.00),
+    (2, 'Muffin', 'Soft and flavorful muffin in assorted varieties.', 2.75),
+    (3, 'Turkey Sandwich', 'Oven-roasted turkey with fresh veggies.', 5.00),
+    (4, 'Caesar Salad', 'Crisp lettuce with Caesar dressing and croutons.', 6.50);
+
+-- Insert sample price history
+INSERT INTO price_history (menu_id, old_price, new_price)
+VALUES
+    (1, 4.00, 4.50),
+    (2, 2.25, 2.50),
+    (3, 2.80, 3.00);
+
+-- Insert sample customers
+INSERT INTO customers (customer_name, age, sex, allergens)
+VALUES
+    ('Alice Johnson', 28, 'female', ARRAY['nuts']),
+    ('Bob Smith', 34, 'male', NULL),
+    ('Charlie Brown', 22, 'other', ARRAY['dairy']),
+    ('Diana Prince', 29, 'female', NULL);
+
+-- Insert sample inventory
+INSERT INTO inventory (inventory_name, quantity, unit, allergens)
+VALUES
+    ('Coffee Beans', 100, 'kg', NULL),
+    ('Caramel Syrup', 50, 'L', NULL),
+    ('Flour', 200, 'kg', ARRAY['gluten']),
+    ('Lettuce', 20, 'kg', NULL);
+
+-- Insert sample inventory transactions
+INSERT INTO inventory_transactions (inventory_id, transaction_type, quantity_changed)
+VALUES
+    (1, 'incoming', 10),
+    (2, 'outgoing', 5),
+    (3, 'incoming', 15),
+    (4, 'damaged', 2);
+
+-- Insert sample menu_items_ingredients
+INSERT INTO menu_items_ingredients (menu_id, inventory_id, quantity)
+VALUES
+    (1, 1, 0.1),
+    (1, 2, 0.02),
+    (2, 1, 0.05),
+    (3, 3, 0.25);
+
+-- Insert sample orders
+INSERT INTO orders (customer_id, status, total_amount)
+VALUES
+    (1, 'created', 10.50),
+    (2, 'pending', 12.75),
+    (3, 'processing', 8.00);
+
+-- Insert sample order status history
+INSERT INTO order_status_history (order_id, status)
+VALUES
+    (1, 'created'),
+    (1, 'pending'),
+    (2, 'created'),
+    (3, 'processing');
+
+-- Insert sample order items
+INSERT INTO order_items (order_id, menu_id, quantity, price_at_order, customization_info)
+VALUES
+    (1, 1, 2, 4.50, '{"size": "large"}'),
+    (1, 2, 1, 2.50, '{"shots": 2}'),
+    (2, 3, 3, 3.00, '{"toasted": true}'),
+    (3, 4, 1, 6.50, '{"dressing": "on side"}');
