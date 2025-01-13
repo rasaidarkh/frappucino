@@ -74,12 +74,12 @@ func (s *APIServer) Run() {
 	//repositoryLayer := repository.NewRepository(s.db, s.logger)
 
 	// #######################
-	// Creating Business Layer
+	// Business Layer
 	// #######################
 	//serviceLayer := service.NewService(repositoryLayer, s.logger)
 
 	// #######################
-	// Creating Presentation Layer
+	// Presentation Layer
 	// #######################
 	//httpLayer := handlers.NewHandler(serviceLayer, s.logger)
 
