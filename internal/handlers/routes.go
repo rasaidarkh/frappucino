@@ -37,33 +37,50 @@ func NewAPIServer(address string, db *sql.DB, logger *slog.Logger, ctx context.C
 }
 
 func (s *APIServer) Run() {
+	// logging...
 	s.logger.Info("API server listening on " + s.address)
 
-	//Creating Repository Layer
-
+	// #######################
+	// Repository Layer
+	// #######################
 	inventoryRepository := repository.NewInventoryRepository(s.db, s.logger)
 	//menuRepository := repository.NewMenuRepository(s.db, s.logger)
 	//orderRepository := repository.NewOrderRepository(s.db, s.logger)
 
-	//Creating Business Layer
+	// #######################
+	// Business Layer
+	// #######################
 	inventoryService := service.NewInventoryService(inventoryRepository, s.logger)
 	//menuService := service.NewMenuService(menuRepository, s.logger)
 	//orderService := service.NewOrderService(orderRepository, s.logger)
-	//Creating Presentation Layer
+
+	// #######################
+	// Presentation Layer
+	// #######################
 	inventoryHandler := NewInventoryHandler(inventoryService, s.logger)
 	//menuHandler := handlers.NewMenuHandler(menuService, s.logger)
 	//orderHandler := handlers.NewOrderHandler(orderService, s.logger)
 
-	//Registering Endpoints
+	// #######################
+	// Registering Endpoints
+	// #######################
 	inventoryHandler.RegisterEndpoints(s.mux)
 	//menuHandler.RegisterEndpoints(s.mux)
 	//orderHandler.RegisterEndpoints(s.mux)
 
-	//Creating Repository Layer
+	// #######################
+	// Repository Layer
+	// #######################
 	//repositoryLayer := repository.NewRepository(s.db, s.logger)
-	//Creating Business Layer
+
+	// #######################
+	// Creating Business Layer
+	// #######################
 	//serviceLayer := service.NewService(repositoryLayer, s.logger)
-	//Creating Presentation Layer
+
+	// #######################
+	// Creating Presentation Layer
+	// #######################
 	//httpLayer := handlers.NewHandler(serviceLayer, s.logger)
 
 	log.Fatal(http.ListenAndServe(s.address, s.mux))
