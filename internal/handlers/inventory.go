@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"frappuccino/internal/models"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -26,21 +27,21 @@ func NewInventoryHandler(service InventoryService, logger *slog.Logger) *Invento
 	return &InventoryHandler{service, logger}
 }
 
-func (i *InventoryHandler) RegisterEndpoints(mux *http.ServeMux) {
-	mux.HandleFunc("POST /inventory", i.Post)
-	mux.HandleFunc("POST /inventory/", i.Post)
+func (h *InventoryHandler) RegisterEndpoints(mux *http.ServeMux) {
+	mux.HandleFunc("POST /inventory", Middleware(h.Post))
+	mux.HandleFunc("POST /inventory/", Middleware(h.Post))
 
-	mux.HandleFunc("GET /inventory", i.GetAll)
-	mux.HandleFunc("GET /inventory/", i.GetAll)
+	mux.HandleFunc("GET /inventory", Middleware(h.GetAll))
+	mux.HandleFunc("GET /inventory/", Middleware(h.GetAll))
 
-	mux.HandleFunc("GET /inventory/{id}", i.GetElementById)
-	mux.HandleFunc("GET /inventory/{id}/", i.GetElementById)
+	mux.HandleFunc("GET /inventory/{id}", Middleware(h.GetElementById))
+	mux.HandleFunc("GET /inventory/{id}/", Middleware(h.GetElementById))
 
-	mux.HandleFunc("PUT /inventory/{id}", i.Put)
-	mux.HandleFunc("PUT /inventory/{id}/", i.Put)
+	mux.HandleFunc("PUT /inventory/{id}", Middleware(h.Put))
+	mux.HandleFunc("PUT /inventory/{id}/", Middleware(h.Put))
 
-	mux.HandleFunc("DELETE /inventory/{id}", i.Delete)
-	mux.HandleFunc("DELETE /inventory/{id}/", i.Delete)
+	mux.HandleFunc("DELETE /inventory/{id}", Middleware(h.Delete))
+	mux.HandleFunc("DELETE /inventory/{id}/", Middleware(h.Delete))
 }
 
 func (h *InventoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +97,7 @@ func (h *InventoryHandler) GetElementById(w http.ResponseWriter, r *http.Request
 
 func (h *InventoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
 	inventoryItems, err := h.Service.GetAll()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -104,8 +106,30 @@ func (h *InventoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
 }
 
 func (h *InventoryHandler) Post(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.Logger.Error(fmt.Sprintf("error reading request body: %v", err))
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var singleItem models.Inventory
+	if err := json.Unmarshal(data, &singleItem); err != nil {
+		h.Logger.Error(fmt.Sprintf("error unmarshalling an inventory item: %v", err))
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if err := h.Service.Post(singleItem); err != nil {
+		h.Logger.Error(fmt.Sprintf("error creating single inventory item: %v", err))
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 }
