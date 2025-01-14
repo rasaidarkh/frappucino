@@ -34,7 +34,7 @@ func NewAPIServer(address string, db *sql.DB, logger *slog.Logger) *APIServer {
 }
 
 func (s *APIServer) Run() {
-	// logging...
+	// Logging http server initialization
 	s.logger.Info("API server listening on " + s.address)
 
 	// #######################

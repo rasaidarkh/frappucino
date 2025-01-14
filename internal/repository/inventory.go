@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"frappuccino/internal/models"
-
 	"log/slog"
+
+	"frappuccino/internal/models"
 )
 
 type InventoryRepository struct {
@@ -22,109 +22,113 @@ func NewInventoryRepository(db *sql.DB, logger *slog.Logger) *InventoryRepositor
 	}
 }
 
+func (r *InventoryRepository) logErrorAndReturn(err error, message string) error {
+	r.Logger.Error(message, "error", err.Error())
+	return err
+}
+
 func (r *InventoryRepository) Put(ctx context.Context, item models.Inventory) error {
-	//TODO implement me
-	panic("implement me")
+	query := `UPDATE inventory SET inventory_name = $1, quantity = $2, unit = $3, allergens = $4 WHERE inventory_id = $5`
+	stmt, err := r.Db.PrepareContext(ctx, query)
+	if err != nil {
+		return r.logErrorAndReturn(err, "failed to prepare update statement")
+	}
+	defer stmt.Close()
+
+	res, err := stmt.ExecContext(ctx, item.InventoryName, item.Quantity, item.Unit, item.Allergens, item.InventoryId)
+	if err != nil {
+		return r.logErrorAndReturn(err, "failed to execute update statement")
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return r.logErrorAndReturn(err, "failed to get rows affected")
+	}
+
+	if rowsAffected == 0 {
+		message := fmt.Sprintf("update failed, inventory item with ID %v does not exist", item.InventoryId)
+		r.Logger.Warn(message)
+		return errors.New(message)
+	}
+
+	r.Logger.Info("inventory item update was successful", "ID", item.InventoryId)
+	return nil
 }
 
 func (r *InventoryRepository) Post(ctx context.Context, item models.Inventory) error {
-	stmt, err := r.Db.PrepareContext(ctx, "INSERT INTO inventory (inventory_name,quantity,unit,allergens) VALUES($1,$2,$3,$4) RETURNING inventory_id")
+	query := `INSERT INTO inventory (inventory_name, quantity, unit, allergens) VALUES ($1, $2, $3, $4) RETURNING inventory_id`
+	stmt, err := r.Db.PrepareContext(ctx, query)
 	if err != nil {
-		r.Logger.Error(err.Error())
-		return err
+		return r.logErrorAndReturn(err, "failed to prepare insert statement")
+	}
+	defer stmt.Close()
+
+	var lastId int
+	err = stmt.QueryRowContext(ctx, item.InventoryName, item.Quantity, item.Unit, item.Allergens).Scan(&lastId)
+	if err != nil {
+		return r.logErrorAndReturn(err, "failed to execute insert statement")
 	}
 
-	var LastId int
-	err = stmt.QueryRowContext(ctx, item.InventoryName, item.Quantity, item.Unit, item.Allergens).Scan(LastId)
-	if err != nil {
-		r.Logger.Error(err.Error())
-		return err
-	}
-	r.Logger.Info("item was successfully inserted", "ID", LastId)
+	r.Logger.Info("item was successfully inserted", "ID", lastId)
 	return nil
 }
 
 func (r *InventoryRepository) GetAll(ctx context.Context) ([]models.Inventory, error) {
-	stmt, err := r.Db.PrepareContext(ctx, "SELECT * FROM inventory")
+	query := `SELECT * FROM inventory`
+	rows, err := r.Db.QueryContext(ctx, query)
 	if err != nil {
-		r.Logger.Error(err.Error())
-		return nil, err
+		return nil, r.logErrorAndReturn(err, "failed to execute select statement")
 	}
+	defer rows.Close()
 
-	r.Logger.Info("inventory select preparation was successful")
-	defer stmt.Close()
-
-	rows, err := stmt.QueryContext(ctx)
-	if err != nil {
-		r.Logger.Error(err.Error())
-		return nil, err
-	}
 	var inventoryItems []models.Inventory
-
 	for rows.Next() {
 		var inventory models.Inventory
-		if err = rows.Scan(
-			&inventory.InventoryId, &inventory.InventoryName,
-			&inventory.Quantity, &inventory.Unit, &inventory.Allergens); err != nil {
-			r.Logger.Error(err.Error())
-			return nil, err
+		err := rows.Scan(&inventory.InventoryId, &inventory.InventoryName, &inventory.Quantity, &inventory.Unit, &inventory.Allergens)
+		if err != nil {
+			return nil, r.logErrorAndReturn(err, "failed to scan row")
 		}
 		inventoryItems = append(inventoryItems, inventory)
 	}
-	if rows.Err() != nil {
-		r.Logger.Error(err.Error())
-		return nil, rows.Err()
+
+	if err := rows.Err(); err != nil {
+		return nil, r.logErrorAndReturn(err, "error iterating over rows")
 	}
+
 	r.Logger.Info("inventory items were transferred successfully")
 	return inventoryItems, nil
 }
 
-func (r *InventoryRepository) GetElementById(ctx context.Context, InventoryId int) (models.Inventory, error) {
-	stmt, err := r.Db.PrepareContext(ctx, "SELECT * FROM inventory WHERE inventory_id = $1")
-
+func (r *InventoryRepository) GetElementById(ctx context.Context, inventoryId int) (models.Inventory, error) {
+	query := `SELECT * FROM inventory WHERE inventory_id = $1`
+	var inventory models.Inventory
+	err := r.Db.QueryRowContext(ctx, query, inventoryId).
+		Scan(&inventory.InventoryId, &inventory.InventoryName, &inventory.Quantity, &inventory.Unit, &inventory.Allergens)
 	if err != nil {
-		r.Logger.Error(err.Error())
-		return models.Inventory{}, err
+		return models.Inventory{}, r.logErrorAndReturn(err, "failed to execute select by ID statement")
 	}
 
-	r.Logger.Info("inventory select preparation was successful")
-	defer stmt.Close()
-	var inventoryItem models.Inventory
-	if err = stmt.QueryRowContext(ctx, InventoryId).Scan(
-		&inventoryItem.InventoryId, &inventoryItem.InventoryName,
-		&inventoryItem.Quantity, &inventoryItem.Unit, &inventoryItem.Allergens); err != nil {
-		r.Logger.Error(err.Error())
-		return models.Inventory{}, err
-	}
-
-	r.Logger.Info("inventory item was transferred successfully")
-	return inventoryItem, nil
+	r.Logger.Info("inventory item was transferred successfully", "ID", inventory.InventoryId)
+	return inventory, nil
 }
 
-func (r *InventoryRepository) Delete(ctx context.Context, InventoryId int) error {
-	// const op = "repository.inventory.Delete"
-	stmt, err := r.Db.PrepareContext(ctx, "DELETE  FROM inventory WHERE inventory_id = $1")
+func (r *InventoryRepository) Delete(ctx context.Context, inventoryId int) error {
+	query := `DELETE FROM inventory WHERE inventory_id = $1`
+	res, err := r.Db.ExecContext(ctx, query, inventoryId)
 	if err != nil {
-		r.Logger.Error(err.Error())
-		return err
+		return r.logErrorAndReturn(err, "failed to execute delete statement")
 	}
-	res, err := stmt.ExecContext(ctx, InventoryId)
+
+	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		r.Logger.Error(err.Error())
-		return err
+		return r.logErrorAndReturn(err, "failed to get rows affected")
 	}
-	n, err := res.RowsAffected()
-	if err == nil {
-		r.Logger.Error(fmt.Sprint(err))
-		return err
+	if rowsAffected == 0 {
+		message := fmt.Sprintf("deletion was not successful, inventory item with ID %v does not exist", inventoryId)
+		r.Logger.Warn(message)
+		return errors.New(message)
 	}
-	if n == 0 {
-		val := fmt.Sprintf("deletion was not successful, %v does not exist", InventoryId)
-		r.Logger.Warn(val)
-		return errors.New(val)
 
-	}
-	r.Logger.Info("inventory item deletion was successful")
-
+	r.Logger.Info("inventory item deletion was successful", "ID", inventoryId)
 	return nil
 }

@@ -13,6 +13,7 @@ func Middleware(handler http.HandlerFunc) http.HandlerFunc {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 			defer cancel()
 
+			w.Header().Set("Content-Type", "application/json")
 			r = r.WithContext(ctx)
 			handler.ServeHTTP(w, r)
 		})

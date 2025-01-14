@@ -46,63 +46,61 @@ func (h *InventoryHandler) RegisterEndpoints(mux *http.ServeMux) {
 }
 
 func (h *InventoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
+	h.handleRequestWithID(w, r, func(ctx context.Context, id int) error {
+		if err := h.Service.Delete(ctx, id); err != nil {
+			return err
+		}
 
-	InventoryId, err := strconv.Atoi(idStr)
-	if err != nil {
-		h.Logger.Error(err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	err = h.Service.Delete(r.Context(), InventoryId)
-	if err != nil {
-		h.Logger.Error(err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	err = json.NewEncoder(w).Encode("deleted")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	w.WriteHeader(http.StatusNoContent)
-	msg := fmt.Sprintf("entry with Id %v was deleted succefully\n", InventoryId)
-	h.Logger.Info(msg)
-
+		response := map[string]string{"message": "deleted"}
+		return json.NewEncoder(w).Encode(response)
+	})
 }
 
 func (h *InventoryHandler) Put(w http.ResponseWriter, r *http.Request) {
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.Logger.Error(fmt.Sprintf("error reading request body: %v", err))
+		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	defer r.Body.Close()
+
+	var item models.Inventory
+	if err := json.Unmarshal(data, &item); err != nil {
+		h.Logger.Error(fmt.Sprintf("error unmarshalling inventory item: %v", err))
+		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid JSON format")
+		return
+	}
+
+	if err := h.Service.Put(r.Context(), item); err != nil {
+		h.Logger.Error(fmt.Sprintf("error updating inventory item: %v", err))
+		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to update item")
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
 func (h *InventoryHandler) GetElementById(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	InventoryId, err := strconv.Atoi(idStr)
-	if err != nil {
-		h.Logger.Error(err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-	}
-	inventoryItem, err := h.Service.GetElementById(r.Context(), InventoryId)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	err = json.NewEncoder(w).Encode(inventoryItem)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	w.WriteHeader(http.StatusOK)
+	h.handleRequestWithID(w, r, func(ctx context.Context, id int) error {
+		item, err := h.Service.GetElementById(ctx, id)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(w).Encode(item)
+	})
 }
 
 func (h *InventoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	inventoryItems, err := h.Service.GetAll(r.Context())
+	items, err := h.Service.GetAll(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		h.Logger.Error(err.Error())
+		h.writeErrorResponse(w, http.StatusBadRequest, "Failed to fetch inventory items")
+		return
 	}
 
-	err = json.NewEncoder(w).Encode(inventoryItems)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := json.NewEncoder(w).Encode(items); err != nil {
+		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to encode response")
 	}
 
 }
@@ -111,21 +109,43 @@ func (h *InventoryHandler) Post(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		h.Logger.Error(fmt.Sprintf("error reading request body: %v", err))
-		w.WriteHeader(http.StatusBadRequest)
+		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 	defer r.Body.Close()
 
-	var singleItem models.Inventory
-	if err := json.Unmarshal(data, &singleItem); err != nil {
-		h.Logger.Error(fmt.Sprintf("error unmarshalling an inventory item: %v", err))
-		w.WriteHeader(http.StatusBadRequest)
+	var item models.Inventory
+	if err := json.Unmarshal(data, &item); err != nil {
+		h.Logger.Error(fmt.Sprintf("error unmarshalling inventory item: %v", err))
+		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid JSON format")
 		return
 	}
 
-	if err := h.Service.Post(r.Context(), singleItem); err != nil {
-		h.Logger.Error(fmt.Sprintf("error creating single inventory item: %v", err))
-		w.WriteHeader(http.StatusBadRequest)
+	if err := h.Service.Post(r.Context(), item); err != nil {
+		h.Logger.Error(fmt.Sprintf("error creating inventory item: %v", err))
+		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to create item")
 		return
 	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *InventoryHandler) handleRequestWithID(w http.ResponseWriter, r *http.Request, handler func(context.Context, int) error) {
+	idStr := r.URL.Path[len(r.URL.Path)-1:]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		h.Logger.Error(fmt.Sprintf("invalid id: %v", err))
+		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+
+	if err := handler(r.Context(), id); err != nil {
+		h.Logger.Error(err.Error())
+		h.writeErrorResponse(w, http.StatusBadRequest, "No such inventory item")
+	}
+}
+
+func (h *InventoryHandler) writeErrorResponse(w http.ResponseWriter, statusCode int, message string) {
+	w.WriteHeader(statusCode)
+	_ = json.NewEncoder(w).Encode(map[string]string{"error": message})
 }

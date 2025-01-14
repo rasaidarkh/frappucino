@@ -7,7 +7,7 @@ services:
       - "8080:8080"
     environment:
       - DB_HOST=db
-      - DB_USER=latte
+      - DB_USER=postgres
       - DB_PASSWORD=latte
       - DB_NAME=frappuccino
       - DB_PORT=5432
@@ -17,7 +17,7 @@ services:
   db:
     image: postgres:15
     environment:
-      - POSTGRES_USER=latte
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=latte
       - POSTGRES_DB=frappuccino
     ports:
