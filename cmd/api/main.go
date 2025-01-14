@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"frappuccino/internal/handlers"
 	"frappuccino/pkg/config"
-	"frappuccino/pkg/lib/slogpretty"
+	"frappuccino/pkg/lib/logger"
 	"log"
 	"os"
 
@@ -13,6 +13,8 @@ import (
 
 func main() {
 	cfg := config.ConfigLoad()
+	logger := logger.SetupPrettySlog(os.Stdout)
+
 	db, err := sql.Open("postgres", cfg.MakeConnectionString())
 	if err != nil {
 		log.Fatal(err)
@@ -23,10 +25,10 @@ func main() {
 	}
 	defer db.Close()
 
-	server := handlers.NewAPIServer(
+	httpSrv := handlers.NewAPIServer(
 		"0.0.0.0:8080",
 		db,
-		slogpretty.SetupPrettySlog(os.Stdout),
+		logger,
 	)
-	server.Run()
+	httpSrv.Run()
 }
