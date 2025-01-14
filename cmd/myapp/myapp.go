@@ -17,21 +17,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
-
-	stmt, err := db.Prepare("SELECT 1;")
-	if err != nil {
-		log.Fatal(err)
-	}
-	var hello string
-	err = stmt.QueryRow().Scan(&hello)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(hello)
 
 	server := handlers.NewAPIServer(
 		"0.0.0.0:8080",
