@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"frappuccino/internal/handlers"
 	"frappuccino/pkg/config"
@@ -38,7 +37,6 @@ func main() {
 		"0.0.0.0:8080",
 		db,
 		slogpretty.SetupPrettySlog(os.Stdout),
-		context.Background(),
 	)
 	server.Run()
 }

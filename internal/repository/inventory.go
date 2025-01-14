@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -21,20 +22,20 @@ func NewInventoryRepository(db *sql.DB, logger *slog.Logger) *InventoryRepositor
 	}
 }
 
-func (r *InventoryRepository) Put(item models.Inventory) error {
+func (r *InventoryRepository) Put(ctx context.Context, item models.Inventory) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *InventoryRepository) Post(item models.Inventory) error {
-	stmt, err := r.Db.Prepare("INSERT INTO inventory (inventory_name,quantity,unit,allergens) VALUES($1,$2,$3,$4) RETURNING inventory_id")
+func (r *InventoryRepository) Post(ctx context.Context, item models.Inventory) error {
+	stmt, err := r.Db.PrepareContext(ctx, "INSERT INTO inventory (inventory_name,quantity,unit,allergens) VALUES($1,$2,$3,$4) RETURNING inventory_id")
 	if err != nil {
 		r.Logger.Error(err.Error())
 		return err
 	}
 
 	var LastId int
-	err = stmt.QueryRow(item.InventoryName, item.Quantity, item.Unit, item.Allergens).Scan(LastId)
+	err = stmt.QueryRowContext(ctx, item.InventoryName, item.Quantity, item.Unit, item.Allergens).Scan(LastId)
 	if err != nil {
 		r.Logger.Error(err.Error())
 		return err
@@ -43,8 +44,8 @@ func (r *InventoryRepository) Post(item models.Inventory) error {
 	return nil
 }
 
-func (r *InventoryRepository) GetAll() ([]models.Inventory, error) {
-	stmt, err := r.Db.Prepare("SELECT * FROM inventory")
+func (r *InventoryRepository) GetAll(ctx context.Context) ([]models.Inventory, error) {
+	stmt, err := r.Db.PrepareContext(ctx, "SELECT * FROM inventory")
 	if err != nil {
 		r.Logger.Error(err.Error())
 		return nil, err
@@ -52,7 +53,8 @@ func (r *InventoryRepository) GetAll() ([]models.Inventory, error) {
 
 	r.Logger.Info("inventory select preparation was successful")
 	defer stmt.Close()
-	rows, err := stmt.Query()
+
+	rows, err := stmt.QueryContext(ctx)
 	if err != nil {
 		r.Logger.Error(err.Error())
 		return nil, err
@@ -77,8 +79,8 @@ func (r *InventoryRepository) GetAll() ([]models.Inventory, error) {
 	return inventoryItems, nil
 }
 
-func (r *InventoryRepository) GetElementById(InventoryId int) (models.Inventory, error) {
-	stmt, err := r.Db.Prepare("SELECT * FROM inventory WHERE inventory_id = $1")
+func (r *InventoryRepository) GetElementById(ctx context.Context, InventoryId int) (models.Inventory, error) {
+	stmt, err := r.Db.PrepareContext(ctx, "SELECT * FROM inventory WHERE inventory_id = $1")
 
 	if err != nil {
 		r.Logger.Error(err.Error())
@@ -88,7 +90,7 @@ func (r *InventoryRepository) GetElementById(InventoryId int) (models.Inventory,
 	r.Logger.Info("inventory select preparation was successful")
 	defer stmt.Close()
 	var inventoryItem models.Inventory
-	if err = stmt.QueryRow(InventoryId).Scan(
+	if err = stmt.QueryRowContext(ctx, InventoryId).Scan(
 		&inventoryItem.InventoryId, &inventoryItem.InventoryName,
 		&inventoryItem.Quantity, &inventoryItem.Unit, &inventoryItem.Allergens); err != nil {
 		r.Logger.Error(err.Error())
@@ -99,14 +101,14 @@ func (r *InventoryRepository) GetElementById(InventoryId int) (models.Inventory,
 	return inventoryItem, nil
 }
 
-func (r *InventoryRepository) Delete(InventoryId int) error {
+func (r *InventoryRepository) Delete(ctx context.Context, InventoryId int) error {
 	// const op = "repository.inventory.Delete"
-	stmt, err := r.Db.Prepare("DELETE  FROM inventory WHERE inventory_id = $1")
+	stmt, err := r.Db.PrepareContext(ctx, "DELETE  FROM inventory WHERE inventory_id = $1")
 	if err != nil {
 		r.Logger.Error(err.Error())
 		return err
 	}
-	res, err := stmt.Exec(InventoryId)
+	res, err := stmt.ExecContext(ctx, InventoryId)
 	if err != nil {
 		r.Logger.Error(err.Error())
 		return err

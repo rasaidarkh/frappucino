@@ -1,16 +1,17 @@
 package service
 
 import (
+	"context"
 	"frappuccino/internal/models"
 	"log/slog"
 )
 
 type InventoryRepository interface {
-	GetAll() ([]models.Inventory, error)
-	GetElementById(InventoryId int) (models.Inventory, error)
-	Delete(InventoryId int) error
-	Put(item models.Inventory) error
-	Post(item models.Inventory) error
+	GetAll(ctx context.Context) ([]models.Inventory, error)
+	GetElementById(ctx context.Context, InventoryId int) (models.Inventory, error)
+	Delete(ctx context.Context, InventoryId int) error
+	Put(ctx context.Context, item models.Inventory) error
+	Post(ctx context.Context, item models.Inventory) error
 }
 
 type InventoryService struct {
@@ -18,12 +19,12 @@ type InventoryService struct {
 	logger *slog.Logger
 }
 
-func (s *InventoryService) Put(item models.Inventory) error {
+func (s *InventoryService) Put(ctx context.Context, item models.Inventory) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s *InventoryService) Post(item models.Inventory) error {
+func (s *InventoryService) Post(ctx context.Context, item models.Inventory) error {
 	//TODO implement me
 	panic("implement me")
 }
@@ -32,15 +33,15 @@ func NewInventoryService(repo InventoryRepository, logger *slog.Logger) *Invento
 	return &InventoryService{Repo: repo, logger: logger}
 }
 
-func (s *InventoryService) GetAll() ([]models.Inventory, error) {
-	return s.Repo.GetAll()
+func (s *InventoryService) GetAll(ctx context.Context) ([]models.Inventory, error) {
+	return s.Repo.GetAll(ctx)
 }
 
-func (s *InventoryService) GetElementById(InventoryId int) (models.Inventory, error) {
-	return s.Repo.GetElementById(InventoryId)
+func (s *InventoryService) GetElementById(ctx context.Context, InventoryId int) (models.Inventory, error) {
+	return s.Repo.GetElementById(ctx, InventoryId)
 }
 
-func (s *InventoryService) Delete(InventoryId int) error {
+func (s *InventoryService) Delete(ctx context.Context, InventoryId int) error {
 	//check that this id is valid
-	return s.Repo.Delete(InventoryId)
+	return s.Repo.Delete(ctx, InventoryId)
 }
