@@ -7,6 +7,12 @@ import (
 )
 
 func Middleware(handler http.HandlerFunc) http.HandlerFunc {
+	handler = WrapContext(handler)
+
+	return handler
+}
+
+func WrapContext(handler http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			// TODO: User Authentication

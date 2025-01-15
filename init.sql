@@ -194,19 +194,19 @@ INSERT INTO inventory
 ('Trays', 500, 'units', '{}'),
 ('Plates', 300, 'units', '{}');
 
--- Mock data for inventory_transactions
--- INSERT INTO inventory_transactions
---     (inventory_id, transaction_type, quantity_changed, transaction_date) VALUES
--- (1, 'add', 20, '2024-01-10'),
--- (2, 'subtract', 50, '2024-01-15'),
--- (3, 'add', 10, '2024-02-01'),
--- (4, 'subtract', 20, '2024-02-15'),
--- (5, 'add', 30, '2024-03-01'),
--- (6, 'subtract', 15, '2024-03-20'),
--- (7, 'add', 5, '2024-04-01'),
--- (8, 'subtract', 10, '2024-04-10'),
--- (9, 'add', 15, '2024-05-01'),
--- (10, 'subtract', 5, '2024-05-10');
+Mock data for inventory_transactions
+INSERT INTO inventory_transactions
+    (inventory_id, transaction_type, quantity_changed, transaction_date) VALUES
+(1, 'add', 20, '2024-01-10'),
+(2, 'subtract', 50, '2024-01-15'),
+(3, 'add', 10, '2024-02-01'),
+(4, 'subtract', 20, '2024-02-15'),
+(5, 'add', 30, '2024-03-01'),
+(6, 'subtract', 15, '2024-03-20'),
+(7, 'add', 5, '2024-04-01'),
+(8, 'subtract', 10, '2024-04-10'),
+(9, 'add', 15, '2024-05-01'),
+(10, 'subtract', 5, '2024-05-10');
 
 -- Mock data for orders
 INSERT INTO orders
