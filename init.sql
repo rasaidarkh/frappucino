@@ -45,6 +45,7 @@ CREATE TABLE customers
 (
     customer_id SERIAL PRIMARY KEY,
     customer_name VARCHAR(100) NOT NULL,
+    role VARCHAR(5) NOT NULL DEFAULT "user",
     age SMALLINT NOT NULL,
     sex sex NOT NULL,
     registration_date timestamptz NOT NULL DEFAULT NOW(),
@@ -54,7 +55,7 @@ CREATE TABLE customers
 CREATE TABLE inventory
 (
     inventory_id SERIAL PRIMARY KEY,
-    inventory_name VARCHAR(100) NOT NULL,
+    inventory_name VARCHAR(100) NOT NULL UNIQUE,
     quantity DECIMAL NOT NULL DEFAULT 0,
     unit VARCHAR(50) NOT NULL,
     allergens VARCHAR(500)[],
@@ -112,7 +113,7 @@ CREATE INDEX idx_menu_items_name ON menu_items(menu_item_name);
 CREATE INDEX idx_customers_name ON customers(customer_name);
 CREATE INDEX idx_inventory_name ON Inventory(inventory_name);
 CREATE INDEX idx_price_history_new_price ON price_history (new_price);
--- CREATE INDEX idx_inventory_transactions_transaction_date ON inventory_transactions (transaction_date);
+CREATE INDEX idx_inventory_transactions_transaction_date ON inventory_transactions (transaction_date);
 CREATE INDEX idx_order_items_customization ON order_items (customization_info);
 CREATE INDEX idx_order_status_history_change_date ON order_status_history (change_date);
 CREATE INDEX idx_order_created_at ON orders (created_at);
