@@ -14,9 +14,7 @@ CREATE TYPE sex AS ENUM ('female', 'male', 'other');
 CREATE TYPE transaction_type AS ENUM
     ('subtract', 'add', 'zero');
 
-
 CREATE TYPE order_status AS ENUM ('created', 'pending', 'processing', 'completed', 'canceled', 'rejected');
-
 
 -- create table queries
 CREATE TABLE categories (
@@ -34,7 +32,6 @@ CREATE TABLE menu_items
     price decimal NOT NULL
 );
 
-
 CREATE TABLE price_history
 (
     price_history_id SERIAL PRIMARY KEY,
@@ -43,8 +40,6 @@ CREATE TABLE price_history
     new_price decimal NOT NULL,
     change_date timestamptz NOT NULL DEFAULT NOW()
 );
-
-
 
 CREATE TABLE customers
 (
@@ -56,14 +51,14 @@ CREATE TABLE customers
     allergens VARCHAR(500)[]
 );
 
-
 CREATE TABLE inventory
 (
     inventory_id SERIAL PRIMARY KEY,
     inventory_name VARCHAR(100) NOT NULL,
     quantity DECIMAL NOT NULL DEFAULT 0,
     unit VARCHAR(50) NOT NULL,
-    allergens VARCHAR(500)[]
+    allergens VARCHAR(500)[],
+    is_active BOOL DEFAULT TRUE
 );
 
 CREATE TABLE inventory_transactions
@@ -117,7 +112,7 @@ CREATE INDEX idx_menu_items_name ON menu_items(menu_item_name);
 CREATE INDEX idx_customers_name ON customers(customer_name);
 CREATE INDEX idx_inventory_name ON Inventory(inventory_name);
 CREATE INDEX idx_price_history_new_price ON price_history (new_price);
-CREATE INDEX idx_inventory_transactions_transaction_date ON inventory_transactions (transaction_date);
+-- CREATE INDEX idx_inventory_transactions_transaction_date ON inventory_transactions (transaction_date);
 CREATE INDEX idx_order_items_customization ON order_items (customization_info);
 CREATE INDEX idx_order_status_history_change_date ON order_status_history (change_date);
 CREATE INDEX idx_order_created_at ON orders (created_at);
@@ -199,18 +194,18 @@ INSERT INTO inventory
 ('Plates', 300, 'units', '{}');
 
 -- Mock data for inventory_transactions
-INSERT INTO inventory_transactions
-    (inventory_id, transaction_type, quantity_changed, transaction_date) VALUES
-(1, 'add', 20, '2024-01-10'),
-(2, 'subtract', 50, '2024-01-15'),
-(3, 'add', 10, '2024-02-01'),
-(4, 'subtract', 20, '2024-02-15'),
-(5, 'add', 30, '2024-03-01'),
-(6, 'subtract', 15, '2024-03-20'),
-(7, 'add', 5, '2024-04-01'),
-(8, 'subtract', 10, '2024-04-10'),
-(9, 'add', 15, '2024-05-01'),
-(10, 'subtract', 5, '2024-05-10');
+-- INSERT INTO inventory_transactions
+--     (inventory_id, transaction_type, quantity_changed, transaction_date) VALUES
+-- (1, 'add', 20, '2024-01-10'),
+-- (2, 'subtract', 50, '2024-01-15'),
+-- (3, 'add', 10, '2024-02-01'),
+-- (4, 'subtract', 20, '2024-02-15'),
+-- (5, 'add', 30, '2024-03-01'),
+-- (6, 'subtract', 15, '2024-03-20'),
+-- (7, 'add', 5, '2024-04-01'),
+-- (8, 'subtract', 10, '2024-04-10'),
+-- (9, 'add', 15, '2024-05-01'),
+-- (10, 'subtract', 5, '2024-05-10');
 
 -- Mock data for orders
 INSERT INTO orders

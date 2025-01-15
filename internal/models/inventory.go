@@ -8,6 +8,7 @@ type Inventory struct {
 	Quantity      float64        `json:"quantity"`
 	Unit          string         `json:"unit"`
 	Allergens     pq.StringArray `json:"allergens"`
+	IsActive      bool           `json:"is_active"`
 }
 
 type InventoryTransactions struct {
