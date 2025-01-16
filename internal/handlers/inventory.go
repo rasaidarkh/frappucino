@@ -48,11 +48,14 @@ func (h *InventoryHandler) RegisterEndpoints(mux *http.ServeMux) {
 func (h *InventoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	h.handleRequestWithID(w, r, func(ctx context.Context, id int) error {
 		if err := h.Service.Delete(ctx, id); err != nil {
+			h.Logger.Error(err.Error())
 			return err
 		}
 
-		response := map[string]string{"message": "deleted"}
-		return json.NewEncoder(w).Encode(response)
+		w.Header().Del("Content-Type")
+		w.WriteHeader(204)
+		h.Logger.Info("Inventory item was deleted", slog.Int("id", id))
+		return nil
 	})
 }
 
@@ -79,14 +82,18 @@ func (h *InventoryHandler) Put(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	h.Logger.Info("Inventory item was updated", slog.Int("id", item.InventoryId))
 }
 
 func (h *InventoryHandler) GetElementById(w http.ResponseWriter, r *http.Request) {
 	h.handleRequestWithID(w, r, func(ctx context.Context, id int) error {
 		item, err := h.Service.GetElementById(ctx, id)
 		if err != nil {
+			h.Logger.Error(err.Error())
 			return err
 		}
+
+		h.Logger.Info("Fetched an inventory item", slog.Int("id", id))
 		return json.NewEncoder(w).Encode(item)
 	})
 }
@@ -100,9 +107,11 @@ func (h *InventoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(items); err != nil {
+		h.Logger.Error(err.Error())
 		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to encode response")
 	}
 
+	h.Logger.Info("Inventory items were fetched")
 }
 
 func (h *InventoryHandler) Post(w http.ResponseWriter, r *http.Request) {
@@ -128,6 +137,7 @@ func (h *InventoryHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+	h.Logger.Info("New inventory item was added", slog.Int("id", item.InventoryId))
 }
 
 func (h *InventoryHandler) handleRequestWithID(w http.ResponseWriter, r *http.Request, handler func(context.Context, int) error) {

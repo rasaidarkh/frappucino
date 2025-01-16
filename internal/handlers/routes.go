@@ -40,14 +40,14 @@ func (s *APIServer) Run() {
 	// #######################
 	// Repository Layer
 	// #######################
-	inventoryRepository := repository.NewInventoryRepository(s.db, s.logger)
+	inventoryRepository := repository.NewInventoryRepository(s.db)
 	//menuRepository := repository.NewMenuRepository(s.db, s.logger)
 	//orderRepository := repository.NewOrderRepository(s.db, s.logger)
 
 	// #######################
 	// Business Layer
 	// #######################
-	inventoryService := service.NewInventoryService(inventoryRepository, s.logger)
+	inventoryService := service.NewInventoryService(inventoryRepository)
 	//menuService := service.NewMenuService(menuRepository, s.logger)
 	//orderService := service.NewOrderService(orderRepository, s.logger)
 
@@ -80,5 +80,6 @@ func (s *APIServer) Run() {
 	// #######################
 	//httpLayer := handlers.NewHandler(serviceLayer, s.logger)
 
+	s.logger.Info("API server listening on " + s.address)
 	log.Fatal(http.ListenAndServe(s.address, s.mux))
 }

@@ -15,7 +15,6 @@ func Middleware(handler http.HandlerFunc) http.HandlerFunc {
 func WrapContext(handler http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			// TODO: User Authentication
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 			defer cancel()
 
