@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	cfg := config.ConfigLoad()
+	cfg := config.LoadConfig()
 	logger := logger.SetupPrettySlog(os.Stdout)
 
 	db, err := sql.Open("postgres", cfg.MakeConnectionString())

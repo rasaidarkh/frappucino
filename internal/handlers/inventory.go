@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"frappuccino/internal/handlers/middleware"
 	"frappuccino/internal/models"
 	"io"
 	"log/slog"
@@ -29,20 +30,20 @@ func NewInventoryHandler(service InventoryService, logger *slog.Logger) *Invento
 }
 
 func (h *InventoryHandler) RegisterEndpoints(mux *http.ServeMux) {
-	mux.HandleFunc("POST /inventory", Middleware(h.Post))
-	mux.HandleFunc("POST /inventory/", Middleware(h.Post))
+	mux.HandleFunc("POST /inventory", middleware.Middleware(h.Post))
+	mux.HandleFunc("POST /inventory/", middleware.Middleware(h.Post))
 
-	mux.HandleFunc("GET /inventory", Middleware(h.GetAll))
-	mux.HandleFunc("GET /inventory/", Middleware(h.GetAll))
+	mux.HandleFunc("GET /inventory", middleware.Middleware(h.GetAll))
+	mux.HandleFunc("GET /inventory/", middleware.Middleware(h.GetAll))
 
-	mux.HandleFunc("GET /inventory/{id}", Middleware(h.GetElementById))
-	mux.HandleFunc("GET /inventory/{id}/", Middleware(h.GetElementById))
+	mux.HandleFunc("GET /inventory/{id}", middleware.Middleware(h.GetElementById))
+	mux.HandleFunc("GET /inventory/{id}/", middleware.Middleware(h.GetElementById))
 
-	mux.HandleFunc("PUT /inventory/{id}", Middleware(h.Put))
-	mux.HandleFunc("PUT /inventory/{id}/", Middleware(h.Put))
+	mux.HandleFunc("PUT /inventory/{id}", middleware.Middleware(h.Put))
+	mux.HandleFunc("PUT /inventory/{id}/", middleware.Middleware(h.Put))
 
-	mux.HandleFunc("DELETE /inventory/{id}", Middleware(h.Delete))
-	mux.HandleFunc("DELETE /inventory/{id}/", Middleware(h.Delete))
+	mux.HandleFunc("DELETE /inventory/{id}", middleware.Middleware(h.Delete))
+	mux.HandleFunc("DELETE /inventory/{id}/", middleware.Middleware(h.Delete))
 }
 
 func (h *InventoryHandler) Delete(w http.ResponseWriter, r *http.Request) {

@@ -6,31 +6,40 @@ import (
 )
 
 type Config struct {
-	Host          string `env:"DB_HOST"`
-	User          string `env:"DB_USER"`
-	Password      string `env:"DB_PASSWORD"`
-	DBname        string `env:"DB_NAME"`
-	Port          string `env:"DB_PORT"`
+	DBHost        string `env:"DB_HOST"`
+	DBUser        string `env:"DB_USER"`
+	DBPassword    string `env:"DB_PASSWORD"`
+	DBName        string `env:"DB_NAME"`
+	DBPort        string `env:"DB_PORT"`
+	JWTSecret     string `env:"JWT_SECRET"`
 	RedisURI      string `env:"REDIS_URI"`
 	RedisPassword string `env:"REDIS_PASSWORD"`
 	RedisDB       int    `env:"REDIS_DB"`
 }
 
-func ConfigLoad() Config {
-	var Cfg Config
-	Cfg.Host = getEnv("DB_HOST", "localhost")
-	Cfg.User = getEnv("DB_USER", "postgres")
-	Cfg.Password = getEnv("DB_PASSWORD", "0000")
-	Cfg.DBname = getEnv("DB_NAME", "frappuccino_db")
-	Cfg.Port = getEnv("DB_PORT", "5432")
+var (
+	Cfg Config
+)
 
-	return Cfg
+func LoadConfig() *Config {
+	Cfg.DBHost = getEnv("DB_HOST", "localhost")
+	Cfg.DBUser = getEnv("DB_USER", "postgres")
+	Cfg.DBPassword = getEnv("DB_PASSWORD", "0000")
+	Cfg.DBName = getEnv("DB_NAME", "frappuccino_db")
+	Cfg.DBPort = getEnv("DB_PORT", "5432")
+	Cfg.JWTSecret = getEnv("JWT_SECRET", "not-so-secret-now-is-it?")
+
+	return &Cfg
+}
+
+func GetConfing() *Config {
+	return &Cfg
 }
 
 func (c *Config) MakeConnectionString() string {
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		c.Host, c.Port, c.User, c.Password, c.DBname,
+		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName,
 	)
 }
 
