@@ -1,2 +1,4 @@
 .idea/
 .env
+.env_app
+.env_db
