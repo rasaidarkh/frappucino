@@ -18,22 +18,22 @@ type Config struct {
 }
 
 var (
-	Cfg Config
+	cfg Config
 )
 
 func LoadConfig() *Config {
-	Cfg.DBHost = getEnv("DB_HOST", "localhost")
-	Cfg.DBUser = getEnv("DB_USER", "postgres")
-	Cfg.DBPassword = getEnv("DB_PASSWORD", "0000")
-	Cfg.DBName = getEnv("DB_NAME", "frappuccino_db")
-	Cfg.DBPort = getEnv("DB_PORT", "5432")
-	Cfg.JWTSecret = getEnv("JWT_SECRET", "not-so-secret-now-is-it?")
+	cfg.DBHost = getEnv("DB_HOST", "localhost")
+	cfg.DBUser = getEnv("DB_USER", "postgres")
+	cfg.DBPassword = getEnv("DB_PASSWORD", "0000")
+	cfg.DBName = getEnv("DB_NAME", "frappuccino_db")
+	cfg.DBPort = getEnv("DB_PORT", "5432")
+	cfg.JWTSecret = getEnv("JWT_SECRET", "not-so-secret-now-is-it?")
 
-	return &Cfg
+	return &cfg
 }
 
 func GetConfing() *Config {
-	return &Cfg
+	return &cfg
 }
 
 func (c *Config) MakeConnectionString() string {

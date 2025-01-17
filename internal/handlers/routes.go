@@ -8,6 +8,8 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+
+	"github.com/go-redis/redis/v8"
 )
 
 func Routes() *http.ServeMux {
@@ -23,14 +25,16 @@ type APIServer struct {
 	mux     *http.ServeMux
 	db      *sql.DB
 	logger  *slog.Logger
+	redis   *redis.Client
 }
 
-func NewAPIServer(address string, db *sql.DB, logger *slog.Logger) *APIServer {
+func NewAPIServer(address string, db *sql.DB, logger *slog.Logger, rdb *redis.Client) *APIServer {
 	return &APIServer{
 		address: address,
 		mux:     Routes(),
 		db:      db,
 		logger:  logger,
+		redis:   rdb,
 	}
 }
 
