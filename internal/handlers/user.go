@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"frappuccino/internal/handlers/middleware"
+	"frappuccino/internal/helpers"
 	"log/slog"
 	"net/http"
 )
@@ -38,16 +40,16 @@ func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
 	pass := r.URL.Query().Get("password")
 
 	if len(username) == 0 || len(pass) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
+		helpers.WriteError(w, http.StatusForbidden, fmt.Errorf("usesrname or password wasn't provided"))
 		return
 	}
 
 	token, err := h.Service.GetToken(r.Context(), username, pass)
 	if err != nil {
 		h.Logger.Error(err.Error())
-		w.WriteHeader(http.StatusBadRequest)
+		helpers.WriteError(w, http.StatusForbidden, err)
 		return
 	}
 
-	w.Write([]byte(token))
+	helpers.WriteJSON(w, http.StatusOK, helpers.Reponse{Key: "token", Value: token})
 }

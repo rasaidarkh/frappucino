@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"context"
+	"fmt"
+	"frappuccino/internal/helpers"
 	"net/http"
 
 	"github.com/go-redis/redis/v8"
@@ -15,13 +17,13 @@ func WithJWTAuth(rdb *redis.Client, handlerFunc http.HandlerFunc) http.HandlerFu
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.PathValue("token")
 		if len(token) == 0 {
-			w.WriteHeader(http.StatusForbidden)
+			helpers.WriteError(w, http.StatusForbidden, fmt.Errorf("token was not provided"))
 			return
 		}
 
 		payload, err := rdb.HGetAll(context.Background(), token).Result()
 		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
+			helpers.WriteError(w, http.StatusForbidden, fmt.Errorf("invalid token"))
 			return
 		}
 

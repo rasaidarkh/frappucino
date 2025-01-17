@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"frappuccino/internal/helpers"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -29,6 +30,9 @@ func LoadConfig() *Config {
 	cfg.DBName = getEnv("DB_NAME", "frappuccino_db")
 	cfg.DBPort = getEnv("DB_PORT", "5432")
 	cfg.JWTSecret = helpers.CreateMd5Hash(getEnv("JWT_SECRET", "not-so-secret-now-is-it?"))
+	cfg.RedisURI = getEnv("REDIS_URI", "redis:6379")
+	cfg.RedisPassword = getEnv("REDIS_PASSWORD", "")
+	cfg.RedisDB, _ = strconv.Atoi(getEnv("REDIS_DB", "0"))
 
 	return &cfg
 }
