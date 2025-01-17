@@ -22,8 +22,3 @@ func WrapContext(handler http.HandlerFunc) http.HandlerFunc {
 			handler.ServeHTTP(w, r)
 		})
 }
-
-func IsAuthenticated() bool {
-	// TODO: Redis session with user authentication
-	return false
-}

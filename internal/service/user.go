@@ -15,9 +15,7 @@ type UserService struct {
 }
 
 func NewUserService(repo UserRepository) *UserService {
-	return &UserService{
-		Repo: repo,
-	}
+	return &UserService{Repo: repo}
 }
 
 func (s *UserService) Register(ctx context.Context, user *models.User) (string, error) {

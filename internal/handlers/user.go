@@ -44,9 +44,9 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		helpers.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
+	defer r.Body.Close()
 
 	user := &models.User{}
-
 	if err := json.Unmarshal(data, user); err != nil {
 		h.Logger.Error(fmt.Sprintf("error reading from request: %v", err))
 		helpers.WriteError(w, http.StatusBadRequest, err)
@@ -60,7 +60,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.WriteJSON(w, http.StatusOK, helpers.Reponse{
+	helpers.WriteJSON(w, http.StatusOK, models.Reponse{
 		Messege: "successfully registered and fetched token",
 		Value:   token,
 	})
@@ -71,7 +71,7 @@ func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
 	pass := r.URL.Query().Get("password")
 
 	if len(username) == 0 {
-		helpers.WriteError(w, http.StatusForbidden, fmt.Errorf("usesrname or password wasn't provided"))
+		helpers.WriteError(w, http.StatusForbidden, fmt.Errorf("usesrname wasn't provided"))
 		return
 	}
 
@@ -82,5 +82,5 @@ func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.WriteJSON(w, http.StatusOK, helpers.Reponse{Messege: "token was fetched", Value: token})
+	helpers.WriteJSON(w, http.StatusOK, models.Reponse{Messege: "token was fetched", Value: token})
 }
