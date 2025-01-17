@@ -1,9 +1,12 @@
 package service
 
-import "context"
+import (
+	"context"
+	"frappuccino/internal/models"
+)
 
 type UserRepository interface {
-	Register(ctx context.Context)
+	Register(ctx context.Context, user *models.User) (string, error)
 	GetToken(ctx context.Context, username, pass string) (string, error)
 }
 
@@ -17,7 +20,10 @@ func NewUserService(repo UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) Register(ctx context.Context) {}
+func (s *UserService) Register(ctx context.Context, user *models.User) (string, error) {
+	return s.Repo.Register(ctx, user)
+}
+
 func (s *UserService) GetToken(ctx context.Context, username, pass string) (string, error) {
 	return s.Repo.GetToken(ctx, username, pass)
 }

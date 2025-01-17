@@ -28,7 +28,19 @@ func NewUserRepository(db *sql.DB, rdb *redis.Client) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Register(ctx context.Context) {}
+func (r *UserRepository) Register(ctx context.Context, user *models.User) (string, error) {
+	query := `
+		INSERT INTO users (username, age, sex, pass, allergens) 
+		VALUES ($1, $2, $3, $4, $5)`
+
+	_, err := r.Db.QueryContext(ctx, query)
+	if err != nil {
+		return "", err
+	}
+
+	return "", nil
+}
+
 func (r *UserRepository) GetToken(ctx context.Context, username, pass string) (string, error) {
 	query := `SELECT * FROM users WHERE username = $1`
 

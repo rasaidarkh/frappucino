@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"frappuccino/internal/handlers/middleware"
 	"frappuccino/internal/helpers"
+	"frappuccino/internal/models"
 	"log/slog"
 	"net/http"
 )
 
 type UserService interface {
-	Register(ctx context.Context)
+	Register(ctx context.Context, user *models.User) (string, error)
 	GetToken(ctx context.Context, username, pass string) (string, error)
 }
 
@@ -34,7 +35,29 @@ func (h *UserHandler) RegisterEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc("POST /get-token/", middleware.Middleware(h.GetToken))
 }
 
-func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {}
+func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
+	username := r.URL.Query().Get("username")
+	pass := r.URL.Query().Get("password")
+
+	token, err := h.Service.Register(
+		r.Context(),
+		&models.User{
+			Username: username,
+			Password: helpers.CreateMd5Hash(pass),
+		},
+	)
+	if err != nil {
+		h.Logger.Error(fmt.Sprintf("error registering new user: %v", err))
+		helpers.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	helpers.WriteJSON(w, http.StatusOK, helpers.Reponse{
+		Key:   "successfully registered, here's your token",
+		Value: token,
+	})
+}
+
 func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	pass := r.URL.Query().Get("password")
