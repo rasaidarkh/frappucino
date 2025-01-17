@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"frappuccino/internal/handlers/middleware"
 	"frappuccino/internal/helpers"
 	"frappuccino/internal/models"
+	"io"
 	"log/slog"
 	"net/http"
 )
@@ -36,16 +38,22 @@ func (h *UserHandler) RegisterEndpoints(mux *http.ServeMux) {
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	username := r.URL.Query().Get("username")
-	pass := r.URL.Query().Get("password")
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.Logger.Error(fmt.Sprintf("error reading from request: %v", err))
+		helpers.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
 
-	token, err := h.Service.Register(
-		r.Context(),
-		&models.User{
-			Username: username,
-			Password: helpers.CreateMd5Hash(pass),
-		},
-	)
+	user := &models.User{}
+
+	if err := json.Unmarshal(data, user); err != nil {
+		h.Logger.Error(fmt.Sprintf("error reading from request: %v", err))
+		helpers.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := h.Service.Register(r.Context(), user)
 	if err != nil {
 		h.Logger.Error(fmt.Sprintf("error registering new user: %v", err))
 		helpers.WriteError(w, http.StatusBadRequest, err)
@@ -53,8 +61,8 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helpers.WriteJSON(w, http.StatusOK, helpers.Reponse{
-		Key:   "successfully registered, here's your token",
-		Value: token,
+		Messege: "successfully registered and fetched token",
+		Value:   token,
 	})
 }
 
@@ -62,7 +70,7 @@ func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	pass := r.URL.Query().Get("password")
 
-	if len(username) == 0 || len(pass) == 0 {
+	if len(username) == 0 {
 		helpers.WriteError(w, http.StatusForbidden, fmt.Errorf("usesrname or password wasn't provided"))
 		return
 	}
@@ -74,5 +82,5 @@ func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.WriteJSON(w, http.StatusOK, helpers.Reponse{Key: "token", Value: token})
+	helpers.WriteJSON(w, http.StatusOK, helpers.Reponse{Messege: "token was fetched", Value: token})
 }

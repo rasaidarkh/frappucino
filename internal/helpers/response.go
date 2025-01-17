@@ -6,8 +6,8 @@ import (
 )
 
 type Reponse struct {
-	Key   string
-	Value string
+	Messege string
+	Value   string
 }
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {

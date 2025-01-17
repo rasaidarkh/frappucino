@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"frappuccino/internal/handlers"
+	"frappuccino/internal/helpers"
 	"frappuccino/pkg/config"
 	"frappuccino/pkg/lib/logger"
 	"log"
@@ -13,6 +15,7 @@ import (
 )
 
 func main() {
+	fmt.Println(helpers.CreateMd5Hash(""))
 	cfg := config.LoadConfig()
 	logger := logger.SetupPrettySlog(os.Stdout)
 

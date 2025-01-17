@@ -7,6 +7,7 @@ import (
 	"frappuccino/internal/helpers"
 	"frappuccino/internal/models"
 	"frappuccino/pkg/jtoken"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -33,20 +34,28 @@ func (r *UserRepository) Register(ctx context.Context, user *models.User) (strin
 		INSERT INTO users (username, age, sex, pass, allergens) 
 		VALUES ($1, $2, $3, $4, $5)`
 
-	_, err := r.Db.QueryContext(ctx, query)
+	vals := []any{user.Username, user.Age, user.Sex, helpers.CreateMd5Hash(user.Password), user.Allergens}
+
+	_, err := r.Db.QueryContext(ctx, query, vals...)
 	if err != nil {
 		return "", err
 	}
 
-	return "", nil
+	payload := LoadPayload(user)
+
+	token, err := jtoken.GenerateAccessToken(ctx, r.Rdb, payload)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
 
 func (r *UserRepository) GetToken(ctx context.Context, username, pass string) (string, error) {
-	query := `SELECT * FROM users WHERE username = $1`
+	query := `SELECT username, password, role, age, sex, registration_date, allergens FROM users WHERE username = $1`
 
 	user := &models.User{}
 	err := r.Db.QueryRowContext(ctx, query, username).Scan(
-		&user.UserID,
 		&user.Username,
 		&user.Password,
 		&user.Role,
@@ -60,10 +69,22 @@ func (r *UserRepository) GetToken(ctx context.Context, username, pass string) (s
 	}
 
 	hashedPass := helpers.CreateMd5Hash(pass)
-	if hashedPass != user.Password {
+	if strings.Trim(hashedPass, " ") != strings.Trim(user.Password, " ") {
+		fmt.Println(hashedPass, user.Password)
 		return "", fmt.Errorf("invalid password")
 	}
 
+	payload := LoadPayload(user)
+
+	token, err := jtoken.GenerateAccessToken(ctx, r.Rdb, payload)
+	if err != nil {
+		return "", fmt.Errorf("eror generating jwt token: %v", err)
+	}
+
+	return token, nil
+}
+
+func LoadPayload(user *models.User) map[string]interface{} {
 	payload := make(map[string]interface{})
 	payload["role"] = user.Role
 	payload["username"] = user.Username
@@ -73,10 +94,5 @@ func (r *UserRepository) GetToken(ctx context.Context, username, pass string) (s
 	payload["allergens"] = user.Allergens
 	payload["expires_at"] = time.Now().Add(expirationJWT).Unix()
 
-	token, err := jtoken.GenerateAccessToken(ctx, r.Rdb, payload)
-	if err != nil {
-		return "", fmt.Errorf("eror generating jwt token: %v", err)
-	}
-
-	return token, nil
+	return payload
 }

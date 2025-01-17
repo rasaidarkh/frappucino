@@ -159,17 +159,17 @@ INSERT INTO price_history
 
 -- Mock data for users
 INSERT INTO users
-    (username, age, sex, allergens) VALUES
-('Alice', 28, 'female', '{"nuts"}'),
-('Bob', 35, 'male', '{}'),
-('Charlie', 22, 'other', '{"gluten"}'),
-('Diana', 30, 'female', '{}'),
-('Edward', 40, 'male', '{}'),
-('Fiona', 27, 'female', '{"dairy"}'),
-('George', 33, 'male', '{}'),
-('Hannah', 25, 'female', '{"soy"}'),
-('Ian', 29, 'male', '{}'),
-('Jane', 31, 'female', '{}');
+    (username, age, sex, allergens, password) VALUES
+('Alice', 28, 'female', '{"nuts"}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Bob', 35, 'male', '{}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Charlie', 22, 'other', '{"gluten"}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Diana', 30, 'female', '{}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Edward', 40, 'male', '{}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Fiona', 27, 'female', '{"dairy"}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('George', 33, 'male', '{}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Hannah', 25, 'female', '{"soy"}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Ian', 29, 'male', '{}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Jane', 31, 'female', '{}', 'd41d8cd98f00b204e9800998ecf8427e');
 
 -- Mock data for inventory
 INSERT INTO inventory
