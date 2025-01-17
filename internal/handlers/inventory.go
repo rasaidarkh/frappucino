@@ -53,7 +53,6 @@ func (h *InventoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		w.Header().Del("Content-Type")
 		w.WriteHeader(204)
 		h.Logger.Info("Inventory item was deleted", slog.Int("id", id))
 		return nil
