@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"frappuccino/internal/helpers"
 	"os"
 )
 
@@ -27,7 +28,7 @@ func LoadConfig() *Config {
 	cfg.DBPassword = getEnv("DB_PASSWORD", "0000")
 	cfg.DBName = getEnv("DB_NAME", "frappuccino_db")
 	cfg.DBPort = getEnv("DB_PORT", "5432")
-	cfg.JWTSecret = getEnv("JWT_SECRET", "not-so-secret-now-is-it?")
+	cfg.JWTSecret = helpers.CreateMd5Hash(getEnv("JWT_SECRET", "not-so-secret-now-is-it?"))
 
 	return &cfg
 }

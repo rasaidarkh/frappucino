@@ -10,12 +10,14 @@ import (
 	"fmt"
 	"frappuccino/pkg/config"
 	"strings"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
 
 const (
-	HeaderJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+	expirationJWT = time.Hour * 5
+	HeaderJWT     = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 	/*
 		{
 			"alg": "HS256",
@@ -64,7 +66,12 @@ func GenerateAccessToken(ctx context.Context, rdb *redis.Client, payload map[str
 
 	jwtToken := HeaderJWT + "." + payloadToken + "." + cfg.JWTSecret
 
-	err = rdb.HSet(ctx, jwtToken, payload).Err()
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("unable to marshal payload: %v", err)
+	}
+
+	err = rdb.Set(ctx, jwtToken, payloadJSON, expirationJWT).Err()
 	if err != nil {
 		return "", fmt.Errorf("unable to set key in redis: %v", err)
 	}

@@ -20,7 +20,7 @@ func NewInventoryRepository(db *sql.DB) *InventoryRepository {
 }
 
 func (r *InventoryRepository) Put(ctx context.Context, item models.Inventory) error {
-	const op = "repository.inventory.Put"
+	// const op = "repository.inventory.Put"
 
 	query := `
 		UPDATE inventory 
