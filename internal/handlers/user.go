@@ -34,9 +34,19 @@ func (h *UserHandler) RegisterEndpoints(mux *http.ServeMux) {
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {}
 func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
-	token, err := h.Service.GetToken(r.Context(), "Jane", "")
+	username := r.URL.Query().Get("username")
+	pass := r.URL.Query().Get("password")
+
+	if len(username) == 0 || len(pass) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	token, err := h.Service.GetToken(r.Context(), username, pass)
 	if err != nil {
 		h.Logger.Error(err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	w.Write([]byte(token))

@@ -20,7 +20,7 @@ func CreateMd5Hash(text string) string {
 	hasher := md5.New()
 	_, err := io.WriteString(hasher, text)
 	if err != nil {
-		panic(err)
+		// panic(err)
 	}
 
 	return hex.EncodeToString(hasher.Sum(nil))
