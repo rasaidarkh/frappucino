@@ -46,7 +46,7 @@ CREATE TABLE users
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
     password CHAR(60) NOT NULL,
-    role VARCHAR(5) NOT NULL DEFAULT 'user',
+    is_admin BOOL NOT NULL DEFAULT False,
     age SMALLINT NOT NULL,
     sex sex NOT NULL,
     registration_date timestamptz NOT NULL DEFAULT NOW(),

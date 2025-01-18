@@ -52,13 +52,13 @@ func (r *UserRepository) Register(ctx context.Context, user *models.User) (strin
 }
 
 func (r *UserRepository) GetToken(ctx context.Context, username, pass string) (string, error) {
-	query := `SELECT username, password, role, age, sex, registration_date, allergens FROM users WHERE username = $1`
+	query := `SELECT username, password, is_admin, age, sex, registration_date, allergens FROM users WHERE username = $1`
 
 	user := &models.User{}
 	err := r.Db.QueryRowContext(ctx, query, username).Scan(
 		&user.Username,
 		&user.Password,
-		&user.Role,
+		&user.IsAdmin,
 		&user.Age,
 		&user.Sex,
 		&user.FirstOrder,
@@ -86,7 +86,7 @@ func (r *UserRepository) GetToken(ctx context.Context, username, pass string) (s
 
 func LoadPayload(user *models.User) map[string]interface{} {
 	payload := make(map[string]interface{})
-	payload["role"] = user.Role
+	payload["is_admin"] = user.IsAdmin
 	payload["username"] = user.Username
 	payload["age"] = user.Age
 	payload["sex"] = user.Sex
