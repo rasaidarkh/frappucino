@@ -41,11 +41,12 @@ CREATE TABLE price_history
     change_date timestamptz NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE customers
+CREATE TABLE users
 (
-    customer_id SERIAL PRIMARY KEY,
-    customer_name VARCHAR(100) NOT NULL,
-    role VARCHAR(5) NOT NULL DEFAULT "user",
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password CHAR(60) NOT NULL,
+    role VARCHAR(5) NOT NULL DEFAULT 'user',
     age SMALLINT NOT NULL,
     sex sex NOT NULL,
     registration_date timestamptz NOT NULL DEFAULT NOW(),
@@ -82,7 +83,7 @@ CREATE TABLE menu_items_ingredients
 CREATE TABLE orders
 (
     order_id SERIAL PRIMARY KEY,
-    customer_id INTEGER REFERENCES customers(customer_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE RESTRICT ON UPDATE CASCADE,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     status order_status NOT NULL DEFAULT 'created',
     total_amount decimal NOT NULL
@@ -110,7 +111,7 @@ CREATE TABLE order_items
 
 -- indices
 CREATE INDEX idx_menu_items_name ON menu_items(menu_item_name);
-CREATE INDEX idx_customers_name ON customers(customer_name);
+CREATE INDEX idx_users_name ON users(username);
 CREATE INDEX idx_inventory_name ON Inventory(inventory_name);
 CREATE INDEX idx_price_history_new_price ON price_history (new_price);
 CREATE INDEX idx_inventory_transactions_transaction_date ON inventory_transactions (transaction_date);
@@ -156,19 +157,19 @@ INSERT INTO price_history
 (9, 3.0, 3.2, '2024-04-01'),
 (10, 2.3, 2.5, '2024-01-25');
 
--- Mock data for customers
-INSERT INTO customers
-    (customer_name, age, sex, allergens) VALUES
-('Alice Johnson', 28, 'female', '{"nuts"}'),
-('Bob Smith', 35, 'male', '{}'),
-('Charlie Brown', 22, 'other', '{"gluten"}'),
-('Diana Prince', 30, 'female', '{}'),
-('Edward Clark', 40, 'male', '{}'),
-('Fiona Adams', 27, 'female', '{"dairy"}'),
-('George Hill', 33, 'male', '{}'),
-('Hannah Moore', 25, 'female', '{"soy"}'),
-('Ian Scott', 29, 'male', '{}'),
-('Jane Doe', 31, 'female', '{}');
+-- Mock data for users
+INSERT INTO users
+    (username, age, sex, allergens, password) VALUES
+('Alice', 28, 'female', '{"nuts"}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Bob', 35, 'male', '{}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Charlie', 22, 'other', '{"gluten"}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Diana', 30, 'female', '{}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Edward', 40, 'male', '{}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Fiona', 27, 'female', '{"dairy"}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('George', 33, 'male', '{}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Hannah', 25, 'female', '{"soy"}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Ian', 29, 'male', '{}', 'd41d8cd98f00b204e9800998ecf8427e'),
+('Jane', 31, 'female', '{}', 'd41d8cd98f00b204e9800998ecf8427e');
 
 -- Mock data for inventory
 INSERT INTO inventory
@@ -210,7 +211,7 @@ INSERT INTO inventory_transactions
 
 -- Mock data for orders
 INSERT INTO orders
-    (customer_id, created_at, status, total_amount) VALUES
+    (user_id, created_at, status, total_amount) VALUES
 (1, '2024-01-10', 'completed', 15.0),
 (2, '2024-01-15', 'canceled', 20.0),
 (3, '2024-02-01', 'completed', 12.0),

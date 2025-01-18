@@ -2,35 +2,49 @@ package config
 
 import (
 	"fmt"
+	"frappuccino/internal/helpers"
 	"os"
+	"strconv"
 )
 
 type Config struct {
-	Host          string `env:"DB_HOST"`
-	User          string `env:"DB_USER"`
-	Password      string `env:"DB_PASSWORD"`
-	DBname        string `env:"DB_NAME"`
-	Port          string `env:"DB_PORT"`
+	DBHost        string `env:"DB_HOST"`
+	DBUser        string `env:"DB_USER"`
+	DBPassword    string `env:"DB_PASSWORD"`
+	DBName        string `env:"DB_NAME"`
+	DBPort        string `env:"DB_PORT"`
+	JWTSecret     string `env:"JWT_SECRET"`
 	RedisURI      string `env:"REDIS_URI"`
 	RedisPassword string `env:"REDIS_PASSWORD"`
 	RedisDB       int    `env:"REDIS_DB"`
 }
 
-func ConfigLoad() Config {
-	var Cfg Config
-	Cfg.Host = getEnv("DB_HOST", "localhost")
-	Cfg.User = getEnv("DB_USER", "postgres")
-	Cfg.Password = getEnv("DB_PASSWORD", "0000")
-	Cfg.DBname = getEnv("DB_NAME", "frappuccino_db")
-	Cfg.Port = getEnv("DB_PORT", "5432")
+var (
+	cfg Config
+)
 
-	return Cfg
+func LoadConfig() *Config {
+	cfg.DBHost = getEnv("DB_HOST", "localhost")
+	cfg.DBUser = getEnv("DB_USER", "postgres")
+	cfg.DBPassword = getEnv("DB_PASSWORD", "0000")
+	cfg.DBName = getEnv("DB_NAME", "frappuccino_db")
+	cfg.DBPort = getEnv("DB_PORT", "5432")
+	cfg.JWTSecret = helpers.CreateMd5Hash(getEnv("JWT_SECRET", "not-so-secret-now-is-it?"))
+	cfg.RedisURI = getEnv("REDIS_URI", "redis:6379")
+	cfg.RedisPassword = getEnv("REDIS_PASSWORD", "")
+	cfg.RedisDB, _ = strconv.Atoi(getEnv("REDIS_DB", "0"))
+
+	return &cfg
+}
+
+func GetConfing() *Config {
+	return &cfg
 }
 
 func (c *Config) MakeConnectionString() string {
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		c.Host, c.Port, c.User, c.Password, c.DBname,
+		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName,
 	)
 }
 
