@@ -6,26 +6,23 @@ import (
 	"fmt"
 	"frappuccino/internal/helpers"
 	"frappuccino/internal/models"
+	"frappuccino/pkg/config"
 	"frappuccino/pkg/jtoken"
 	"strings"
 	"time"
-
-	"github.com/go-redis/redis/v8"
 )
 
 type UserRepository struct {
-	Db  *sql.DB
-	Rdb *redis.Client
+	Db *sql.DB
 }
 
 const (
 	expirationJWT = time.Hour * 5
 )
 
-func NewUserRepository(db *sql.DB, rdb *redis.Client) *UserRepository {
+func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{
-		Db:  db,
-		Rdb: rdb,
+		Db: db,
 	}
 }
 
@@ -42,8 +39,7 @@ func (r *UserRepository) Register(ctx context.Context, user *models.User) (strin
 	}
 
 	payload := LoadPayload(user)
-
-	token, err := jtoken.GenerateAccessToken(ctx, r.Rdb, payload)
+	token, err := jtoken.GenerateAccessToken(payload, config.GetJWTSecret())
 	if err != nil {
 		return "", err
 	}
@@ -75,8 +71,7 @@ func (r *UserRepository) GetToken(ctx context.Context, username, pass string) (s
 	}
 
 	payload := LoadPayload(user)
-
-	token, err := jtoken.GenerateAccessToken(ctx, r.Rdb, payload)
+	token, err := jtoken.GenerateAccessToken(payload, config.GetJWTSecret())
 	if err != nil {
 		return "", fmt.Errorf("eror generating jwt token: %v", err)
 	}
@@ -84,15 +79,11 @@ func (r *UserRepository) GetToken(ctx context.Context, username, pass string) (s
 	return token, nil
 }
 
-func LoadPayload(user *models.User) map[string]interface{} {
-	payload := make(map[string]interface{})
-	payload["is_admin"] = user.IsAdmin
-	payload["username"] = user.Username
-	payload["age"] = user.Age
-	payload["sex"] = user.Sex
-	payload["first_order"] = user.FirstOrder
-	payload["allergens"] = user.Allergens
-	payload["expires_at"] = time.Now().Add(expirationJWT).Unix()
+func LoadPayload(user *models.User) *jtoken.Payload {
+	payload := jtoken.NewPayload()
+	payload.IsAdmin = user.IsAdmin
+	payload.Username = user.Username
+	payload.ExpiresAt = time.Now().Add(expirationJWT)
 
 	return payload
 }

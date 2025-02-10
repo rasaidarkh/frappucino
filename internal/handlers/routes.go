@@ -8,8 +8,6 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
-
-	"github.com/go-redis/redis/v8"
 )
 
 func Routes() *http.ServeMux {
@@ -25,16 +23,14 @@ type APIServer struct {
 	mux     *http.ServeMux
 	db      *sql.DB
 	logger  *slog.Logger
-	redis   *redis.Client
 }
 
-func NewAPIServer(address string, db *sql.DB, logger *slog.Logger, rdb *redis.Client) *APIServer {
+func NewAPIServer(address string, db *sql.DB, logger *slog.Logger) *APIServer {
 	return &APIServer{
 		address: address,
 		mux:     Routes(),
 		db:      db,
 		logger:  logger,
-		redis:   rdb,
 	}
 }
 
@@ -46,7 +42,7 @@ func (s *APIServer) Run() {
 	// Repository Layer
 	// #######################
 	inventoryRepository := repository.NewInventoryRepository(s.db)
-	userRepository := repository.NewUserRepository(s.db, s.redis)
+	userRepository := repository.NewUserRepository(s.db)
 	//menuRepository := repository.NewMenuRepository(s.db, s.logger)
 	//orderRepository := repository.NewOrderRepository(s.db, s.logger)
 

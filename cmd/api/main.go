@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-redis/redis/v8"
 	_ "github.com/lib/pq"
 )
 
@@ -26,17 +25,10 @@ func main() {
 	}
 	defer db.Close()
 
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
-		Password: "",
-		DB:       0,
-	})
-
 	httpSrv := handlers.NewAPIServer(
 		"0.0.0.0:8080",
 		db,
 		logger,
-		rdb,
 	)
 	httpSrv.Run()
 }
