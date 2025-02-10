@@ -33,8 +33,8 @@ func (h *UserHandler) RegisterEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc("POST /register", middleware.Middleware(h.Register))
 	mux.HandleFunc("POST /register/", middleware.Middleware(h.Register))
 
-	mux.HandleFunc("POST /get-token", middleware.Middleware(h.GetToken))
-	mux.HandleFunc("POST /get-token/", middleware.Middleware(h.GetToken))
+	mux.HandleFunc("POST /login", middleware.Middleware(h.GetToken))
+	mux.HandleFunc("POST /login/", middleware.Middleware(h.GetToken))
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
