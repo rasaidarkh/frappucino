@@ -32,27 +32,27 @@ func NewPayload() *Payload {
 	return &Payload{}
 }
 
-// Checks JWT format and expiration date
-func VerifyJWT(token, secretKey string) (bool, error) {
+// Checks JWT format and expiration date, and returns payload
+func VerifyJWT(token, secretKey string) (*Payload, error) {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
-		return false, errors.New("invalid token format")
+		return nil, errors.New("invalid token format")
 	}
 
 	if parts[0] != HeaderJWT {
-		return false, errors.New("invalid header format")
+		return nil, errors.New("invalid header format")
 	}
 
 	payload := NewPayload()
 	if err := json.Unmarshal([]byte(parts[1]), payload); err != nil {
-		return false, errors.New("invalid payload format")
+		return nil, errors.New("invalid payload format")
 	}
 
 	if payload.ExpiresAt.Before(time.Now()) {
-		return false, errors.New("token is expired")
+		return nil, errors.New("token is expired")
 	}
 
-	return true, nil
+	return payload, nil
 }
 
 func SignHS256(payload []byte, secretKey string) (string, error) {
