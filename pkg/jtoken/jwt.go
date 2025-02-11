@@ -20,86 +20,125 @@ const (
 			"typ": "JWT"
 		}
 	*/
+
+	errEmptyToken  = "empty token"
+	errInvalidFmt  = "invalid token format"
+	errInvalidHdr  = "invalid header format"
+	errInvalidEnc  = "invalid payload encoding"
+	errInvalidSig  = "invalid signature"
+	errInvalidJSON = "invalid payload format"
+	errTokenExp    = "token is expired"
+	errNoUsername  = "username is required"
+	errEmptyPL     = "empty payload"
+	errSignFail    = "unable to generate access token"
 )
 
+// Payload represents JWT claims
 type Payload struct {
 	IsAdmin   bool      `json:"is_admin"`
 	Username  string    `json:"username"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
-func NewPayload() *Payload {
-	return &Payload{}
+// Validate checks required fields in the Payload
+func (p *Payload) Validate() error {
+	if p == nil {
+		return errors.New(errEmptyPL)
+	}
+	if p.Username == "" {
+		return errors.New(errNoUsername)
+	}
+	return nil
 }
 
-// VerifyJWT checks the token format, signature, and expiration
+// GenerateAccessToken creates a signed JWT token
+func GenerateAccessToken(payload *Payload, secretKey string) (string, error) {
+	if secretKey == "" {
+		return "", errors.New(errSignFail)
+	}
+
+	if err := payload.Validate(); err != nil {
+		return "", err
+	}
+
+	// payload.ExpiresAt = time.Now().Add(expirationJWT)
+	if payload.ExpiresAt.Before(time.Now()) {
+		return "", errors.New(errTokenExp)
+	}
+
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return "", errors.New(errInvalidJSON)
+	}
+
+	encodedPayload := base64.RawURLEncoding.EncodeToString(data)
+	signature, err := SignHS256(HeaderJWT+"."+encodedPayload, secretKey)
+	if err != nil {
+		return "", fmt.Errorf("%s: %v", errSignFail, err)
+	}
+
+	return HeaderJWT + "." + encodedPayload + "." + signature, nil
+}
+
+// VerifyJWT checks token format, signature, and expiration
 func VerifyJWT(token, secretKey string) (*Payload, error) {
+	if token == "" {
+		return nil, errors.New(errEmptyToken)
+	}
+
+	if secretKey == "" {
+		return nil, errors.New(errSignFail)
+	}
+
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
-		return nil, errors.New("invalid token format")
+		return nil, errors.New(errInvalidFmt)
 	}
-
 	if parts[0] != HeaderJWT {
-		return nil, errors.New("invalid header format")
+		return nil, errors.New(errInvalidFmt)
 	}
 
-	// Decode payload from Base64
-	payloadJSON, err := base64.RawURLEncoding.DecodeString(parts[1])
-	if err != nil {
-		return nil, errors.New("invalid payload encoding")
-	}
-
-	payload := NewPayload()
-	if err := json.Unmarshal(payloadJSON, payload); err != nil {
-		return nil, errors.New("invalid payload format")
-	}
-
-	// Check expiration
-	if payload.ExpiresAt.Before(time.Now()) {
-		return nil, errors.New("token is expired")
-	}
-
-	// Verify Signature
-	expectedSignature, err := SignHS256(parts[0]+"."+parts[1], secretKey)
+	// Decode payload
+	payload, err := decodePayload(parts[1])
 	if err != nil {
 		return nil, err
 	}
 
+	// Check expiration
+	if payload.ExpiresAt.Before(time.Now()) {
+		return nil, errors.New(errTokenExp)
+	}
+
+	// Verify signature
+	expectedSignature, err := SignHS256(parts[0]+"."+parts[1], secretKey)
+	if err != nil {
+		return nil, err
+	}
 	if parts[2] != expectedSignature {
-		return nil, errors.New("invalid signature")
+		return nil, errors.New(errInvalidSig)
 	}
 
 	return payload, nil
 }
 
 // SignHS256 generates an HMAC-SHA256 signature
-func SignHS256(data string, secretKey string) (string, error) {
+func SignHS256(data, secretKey string) (string, error) {
 	h := hmac.New(sha256.New, []byte(secretKey))
 	h.Write([]byte(data))
-	signature := h.Sum(nil)
-
-	return base64.RawURLEncoding.EncodeToString(signature), nil
+	return base64.RawURLEncoding.EncodeToString(h.Sum(nil)), nil
 }
 
-// GenerateAccessToken creates a signed JWT
-func GenerateAccessToken(payload *Payload, secretKey string) (string, error) {
-	payload.ExpiresAt = time.Now().Add(expirationJWT)
-
-	data, err := json.Marshal(payload)
+// decodePayload decodes a Base64-encoded JSON payload into a Payload struct
+func decodePayload(encoded string) (*Payload, error) {
+	data, err := base64.RawURLEncoding.DecodeString(encoded)
 	if err != nil {
-		return "", errors.New("invalid payload")
+		return nil, errors.New(errInvalidEnc)
 	}
 
-	// Encode payload in Base64
-	encodedPayload := base64.RawURLEncoding.EncodeToString(data)
-
-	// Create signature
-	signature, err := SignHS256(HeaderJWT+"."+encodedPayload, secretKey)
-	if err != nil {
-		return "", fmt.Errorf("unable to generate access token: %v", err)
+	var payload Payload
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return nil, errors.New(errInvalidJSON)
 	}
 
-	jwtToken := HeaderJWT + "." + encodedPayload + "." + signature
-
-	return jwtToken, nil
+	return &payload, nil
 }

@@ -80,7 +80,7 @@ func (r *UserRepository) GetToken(ctx context.Context, username, pass string) (s
 }
 
 func LoadPayload(user *models.User) *jtoken.Payload {
-	payload := jtoken.NewPayload()
+	payload := &jtoken.Payload{}
 	payload.IsAdmin = user.IsAdmin
 	payload.Username = user.Username
 	payload.ExpiresAt = time.Now().Add(expirationJWT)
