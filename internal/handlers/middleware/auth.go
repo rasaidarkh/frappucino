@@ -2,9 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
-	"frappuccino/internal/helpers"
-	"frappuccino/pkg/config"
 	"frappuccino/pkg/jtoken"
 	"net/http"
 )
@@ -15,15 +12,20 @@ const ctxKey key = "payload"
 
 func WithJWTAuth(handlerFunc http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := r.PathValue("token")
-		if len(token) == 0 {
-			helpers.WriteError(w, http.StatusForbidden, fmt.Errorf("token was not provided"))
+		cookie, err := r.Cookie("jwtToken")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				http.Error(w, "Not authorized", http.StatusForbidden)
+				return
+			}
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
-		payload, err := jtoken.VerifyJWT(token, config.GetJWTSecret())
+		jwtToken := cookie.Value
+		payload, err := jtoken.DecodePayload(jwtToken)
 		if err != nil {
-			helpers.WriteError(w, http.StatusForbidden, err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 

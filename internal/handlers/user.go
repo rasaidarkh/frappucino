@@ -73,8 +73,8 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
-	username := r.URL.Query().Get("username")
-	pass := r.URL.Query().Get("password")
+	username := r.FormValue("username")
+	pass := r.FormValue("password")
 
 	if len(username) == 0 {
 		helpers.WriteError(w, http.StatusForbidden, fmt.Errorf("usesrname wasn't provided"))
@@ -89,6 +89,16 @@ func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helpers.WriteJSON(w, http.StatusOK, models.Reponse{Messege: "token was fetched", Value: token})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwtToken",
+		Value:    token,
+		HttpOnly: true,
+		Secure:   true,                    // Only send over HTTPS
+		SameSite: http.SameSiteStrictMode, // Prevent CSRF
+		Path:     "/",
+		MaxAge:   86400, // Expires in 1 day
+	})
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {

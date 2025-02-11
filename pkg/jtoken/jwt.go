@@ -99,7 +99,7 @@ func VerifyJWT(token, secretKey string) (*Payload, error) {
 	}
 
 	// Decode payload
-	payload, err := decodePayload(parts[1])
+	payload, err := DecodePayload(token)
 	if err != nil {
 		return nil, err
 	}
@@ -129,8 +129,13 @@ func SignHS256(data, secretKey string) (string, error) {
 }
 
 // decodePayload decodes a Base64-encoded JSON payload into a Payload struct
-func decodePayload(encoded string) (*Payload, error) {
-	data, err := base64.RawURLEncoding.DecodeString(encoded)
+func DecodePayload(jtoken string) (*Payload, error) {
+	parts := strings.Split(jtoken, ".")
+	if len(parts) != 3 {
+		return nil, errors.New(errInvalidFmt)
+	}
+
+	data, err := base64.RawURLEncoding.DecodeString(parts[1])
 	if err != nil {
 		return nil, errors.New(errInvalidEnc)
 	}

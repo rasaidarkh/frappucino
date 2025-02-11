@@ -57,12 +57,10 @@
             <div class="contact_section_2">
                <div class="row">
                   <div class="col-md-12">
-                     <div class="mail_section_1">
-                        <input type="text" class="mail_text" placeholder="Your Name" name="Your Name">
-                        <input type="text" class="mail_text" placeholder="Your Email" name="Your Email">
-                        <input type="text" class="mail_text" placeholder="Your Phone" name="Your Phone">
-                        <textarea class="massage-bt" placeholder="Message" rows="5" id="comment" name="Message"></textarea>
-                        <div class="send_bt"><a href="#">SEND</a></div>
+                     <form method="post" action="/get-token/" class="mail_section_1">
+                        <input type="text" class="mail_text" placeholder="Username" name="username">
+                        <input type="text" class="mail_text" placeholder="Password" name="password">
+                        <div class="send_bt"><button type="submit">Login</button></div>
                      </div>
                   </div>
                </div>
