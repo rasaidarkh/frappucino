@@ -28,7 +28,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 func (r *UserRepository) Register(ctx context.Context, user *models.User) (string, error) {
 	query := `
-		INSERT INTO users (username, age, sex, pass, allergens) 
+		INSERT INTO users (username, age, sex, password, allergens) 
 		VALUES ($1, $2, $3, $4, $5)`
 
 	vals := []any{user.Username, user.Age, user.Sex, helpers.CreateMd5Hash(user.Password), user.Allergens}
