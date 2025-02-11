@@ -10,6 +10,9 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
+	"path/filepath"
+	"text/template"
 )
 
 type UserService interface {
@@ -33,8 +36,11 @@ func (h *UserHandler) RegisterEndpoints(mux *http.ServeMux) {
 	mux.HandleFunc("POST /register", middleware.Middleware(h.Register))
 	mux.HandleFunc("POST /register/", middleware.Middleware(h.Register))
 
-	mux.HandleFunc("POST /login", middleware.Middleware(h.GetToken))
-	mux.HandleFunc("POST /login/", middleware.Middleware(h.GetToken))
+	mux.HandleFunc("POST /get-token", middleware.Middleware(h.GetToken))
+	mux.HandleFunc("POST /get-token/", middleware.Middleware(h.GetToken))
+
+	mux.HandleFunc("GET /login", middleware.Middleware(h.Login))
+	mux.HandleFunc("GET /login/", middleware.Middleware(h.Login))
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
@@ -83,4 +89,20 @@ func (h *UserHandler) GetToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helpers.WriteJSON(w, http.StatusOK, models.Reponse{Messege: "token was fetched", Value: token})
+}
+
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	dir, _ := os.Getwd()
+	path := filepath.Join(dir, "templates/contact.html")
+
+	t, err := template.ParseFiles(path)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+	}
+
+	body, err := os.ReadFile(path)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+	}
+	t.Execute(w, body)
 }
